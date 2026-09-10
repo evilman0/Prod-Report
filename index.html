@@ -169,6 +169,7 @@
       color: #888;
       box-shadow: none;
     }
+
     /* === СТИЛИ ДЛЯ СЕКРЕТНОГО ОКНА (ПАСХАЛКИ) === */
     .easter-egg-modal {
       display: none;
@@ -185,18 +186,18 @@
       flex-direction: column;
       padding: 20px;
     }
-    
+
     .easter-egg-modal.active {
       display: flex;
       animation: modalShake 0.4s ease-in-out;
     }
-    
+
     .easter-egg-content {
       text-align: center;
       position: relative;
       max-width: 90%;
     }
-    
+
     .easter-egg-img {
       max-width: 100%;
       max-height: 60vh;
@@ -205,7 +206,7 @@
       box-shadow: 0 0 30px var(--accent-color), 0 0 60px var(--accent-color);
       animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), neonPulse 1.5s infinite alternate;
     }
-    
+
     .easter-egg-title {
       margin-top: 20px;
       font-size: 20px;
@@ -215,7 +216,7 @@
       text-transform: uppercase;
       letter-spacing: 2px;
     }
-    
+
     .btn-close-egg {
       margin-top: 20px;
       background: var(--accent-color);
@@ -227,18 +228,18 @@
       font-size: 14px;
       cursor: pointer;
     }
-    
+
     /* Анимации */
     @keyframes popIn {
       0% { transform: scale(0) rotate(-10deg); opacity: 0; }
       100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
-    
+
     @keyframes neonPulse {
       0% { box-shadow: 0 0 20px var(--accent-color); }
       100% { box-shadow: 0 0 50px #ff3b30, 0 0 80px var(--accent-color); }
     }
-    
+
     @keyframes modalShake {
       0%, 100% { transform: translate(0, 0); }
       20%, 60% { transform: translate(-10px, 0); }
@@ -285,10 +286,19 @@
     <button type="submit" class="btn-submit" id="submitBtn">Отправить отчёт</button>
   </form>
 
+  <!-- Секретное всплывающее окно -->
+  <div id="easterEggModal" class="easter-egg-modal">
+    <div class="easter-egg-content">
+      <img id="easterEggImg" class="easter-egg-img" src="secret.jpg" alt="Секрет">
+      <div class="easter-egg-title">Титьки!</div>
+      <button type="button" class="btn-close-egg" onclick="closeEasterEgg()">Закрыть</button>
+    </div>
+  </div>
+
   <script>
     // === НАСТРОЙКИ БОТА ===
-    const BOT_TOKEN = "7665931565:AAF8fJiY25D04V4wX5_GH8-ZqB-qBzp2EEk"; // Например: 123456789:ABCdefGhIJKlmNoPQ...
-    const CHAT_ID = "-1002607916886";   // Например: -1001234567890
+    const BOT_TOKEN = "7665931565:AAF8fJiY25D04V4wX5_GH8-ZqB-qBzp2EEk";
+    const CHAT_ID = "-1002607916886";
 
     const tg = window.Telegram.WebApp;
     tg.expand(); // Разворачиваем окно на весь экран
@@ -355,20 +365,21 @@
     // Обработка отправки формы
     document.getElementById('reportForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
       const fullName = document.getElementById('fullName').value.trim();
 
       // === НАСТРОЙКА ПАСХАЛКИ ===
-      const SECRET_WORD = "титьки"; // Замените на ваше кодовое слово (в нижнем регистре)
+      const SECRET_WORD = "титьки";
     
       if (fullName.toLowerCase() === SECRET_WORD.toLowerCase()) {
         showEasterEgg();
         return; // Прерываем выполнение! Отчёт НЕ отправляется в Telegram
       }
+
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       submitBtn.innerText = "Отправка...";
 
-      const fullName = document.getElementById('fullName').value;
       const reportDate = document.getElementById('reportDate').value;
       const notes = document.getElementById('notes').value;
 
@@ -424,12 +435,12 @@
         submitBtn.innerText = "Отправить отчёт";
       }
     });
+
     // Вспомогательные функции секретного окна
     function showEasterEgg() {
       const modal = document.getElementById('easterEggModal');
       modal.classList.add('active');
       
-      // Вибрация устройства при открытии (если доступно в Telegram)
       if (tg.HapticFeedback) {
         tg.HapticFeedback.notificationOccurred('error');
       }
@@ -440,14 +451,5 @@
       modal.classList.remove('active');
     }
   </script>
-  <!-- Секретное всплывающее окно -->
-  <div id="easterEggModal" class="easter-egg-modal">
-    <div class="easter-egg-content">
-      <!-- Укажите название вашей картинки или прямую ссылку на неё -->
-      <img id="easterEggImg" class="easter-egg-img" src="secret.jpg" alt="Секрет">
-      <div class="easter-egg-title">Титьки!</div>
-      <button type="button" class="btn-close-egg" onclick="closeEasterEgg()">Закрыть</button>
-    </div>
-  </div>
 </body>
 </html>
