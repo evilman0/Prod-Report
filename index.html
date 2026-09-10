@@ -300,24 +300,36 @@
     const BOT_TOKEN = "7665931565:AAF8fJiY25D04V4wX5_GH8-ZqB-qBzp2EEk";
     const CHAT_ID = "-1002607916886";
 
-    const tg = window.Telegram.WebApp;
-    tg.expand(); // Разворачиваем окно на весь экран
+    // Безопасное получение объекта Telegram WebApp
+    const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+    if (tg && tg.expand) {
+      tg.expand();
+    }
 
-    // Автоматическая подстановка текущей даты
-    document.getElementById('reportDate').valueAsDate = new Date();
+    // Автоматическая установка текущей даты
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById('reportDate').value = `${yyyy}-${mm}-${dd}`;
 
-    // Попытка взять имя из аккаунта Telegram
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    // Подстановка имени из профиля Telegram
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
       const u = tg.initDataUnsafe.user;
-      document.getElementById('fullName').value = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+      const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+      if (name) {
+        document.getElementById('fullName').value = name;
+      }
     }
 
     let entryCounter = 0;
-    const container = document.getElementById('entriesContainer');
 
     // Функция добавления новой карточки станка
     function addEntry() {
       entryCounter++;
+      const container = document.getElementById('entriesContainer');
+      if (!container) return;
+
       const card = document.createElement('div');
       card.className = 'entry-card';
       card.id = `entry-${entryCounter}`;
@@ -354,26 +366,49 @@
       if (card) card.remove();
     }
 
-    // Добавляем первую позицию по умолчанию
+    // Автоматически добавляем первую карточку
     addEntry();
 
+    // Кнопка добавления
     document.getElementById('addEntryBtn').addEventListener('click', () => {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
       addEntry();
     });
+
+    // Функция открытия секретного окна
+    function showEasterEgg() {
+      const modal = document.getElementById('easterEggModal');
+      if (modal) {
+        modal.classList.add('active');
+      }
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred('error');
+      }
+    }
+
+    // Функция закрытия секретного окна
+    function closeEasterEgg() {
+      const modal = document.getElementById('easterEggModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    }
 
     // Обработка отправки формы
     document.getElementById('reportForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const fullName = document.getElementById('fullName').value.trim();
+      const fullNameInput = document.getElementById('fullName');
+      const fullName = fullNameInput ? fullNameInput.value.trim() : "";
 
-      // === НАСТРОЙКА ПАСХАЛКИ ===
+      // === ПРОВЕРКА СЕКРЕТНОГО СЛОВА ===
       const SECRET_WORD = "титьки";
     
       if (fullName.toLowerCase() === SECRET_WORD.toLowerCase()) {
         showEasterEgg();
-        return; // Прерываем выполнение! Отчёт НЕ отправляется в Telegram
+        return; // Не отправляем сообщение в Telegram
       }
 
       const submitBtn = document.getElementById('submitBtn');
@@ -383,7 +418,6 @@
       const reportDate = document.getElementById('reportDate').value;
       const notes = document.getElementById('notes').value;
 
-      // Сбор данных со всех добавленных карточек
       const cards = document.querySelectorAll('.entry-card');
       let itemsText = "";
 
@@ -399,7 +433,6 @@
                      `└ Брак: <b>${defect} шт.</b>\n`;
       });
 
-      // Форматирование финального сообщения (HTML)
       const message = `🏭 <b>ОТЧЁТ С ПРОИЗВОДСТВА</b>\n\n` +
                       `👤 <b>Сотрудник:</b> ${fullName}\n` +
                       `📅 <b>Дата:</b> ${reportDate}\n` +
@@ -422,8 +455,16 @@
         const resData = await response.json();
 
         if (resData.ok) {
-          if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-          tg.close(); // Закрываем Mini App после успешной отправки
+          if (tg && tg.HapticFeedback) {
+            tg.HapticFeedback.notificationOccurred('success');
+          }
+          if (tg && tg.close) {
+            tg.close();
+          } else {
+            alert('Отчёт успешно отправлен!');
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Отправить отчёт";
+          }
         } else {
           alert('Ошибка при отправке: ' + resData.description);
           submitBtn.disabled = false;
@@ -435,21 +476,6 @@
         submitBtn.innerText = "Отправить отчёт";
       }
     });
-
-    // Вспомогательные функции секретного окна
-    function showEasterEgg() {
-      const modal = document.getElementById('easterEggModal');
-      modal.classList.add('active');
-      
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.notificationOccurred('error');
-      }
-    }
-    
-    function closeEasterEgg() {
-      const modal = document.getElementById('easterEggModal');
-      modal.classList.remove('active');
-    }
   </script>
 </body>
 </html>
